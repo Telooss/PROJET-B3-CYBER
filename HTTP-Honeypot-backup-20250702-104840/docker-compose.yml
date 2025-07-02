@@ -1,0 +1,50 @@
+
+
+services:
+  telosmiligramme:
+    build: 
+      context: .
+      tags:
+        - "http-telosmiligramme:latest"
+    image: http-telosmiligramme:latest
+    container_name: http-telosmiligramme
+    ports:
+      - "8080:8080"
+    environment:
+      - BACKEND_PORT=8080
+      - FLASK_ENV=production
+    volumes:
+      # Persist logs outside container
+      - ./logs:/app/logs
+      - ./telosmiligramme.log:/app/telosmiligramme.log
+    restart: unless-stopped
+    networks:
+      - telosmiligramme-network
+    
+    # Resource limits to prevent abuse
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=100m
+
+networks:
+  telosmiligramme-network:
+    driver: bridge
