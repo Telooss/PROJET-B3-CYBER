@@ -1,19 +1,15 @@
 #!/bin/bash
 
-# Script de démarrage du serveur Telosmiligramme
-# Usage: ./start-telosmiligramme.sh [build|start|stop|logs|status]
-
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -45,9 +41,9 @@ show_usage() {
     echo "  help      Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 build    # Build the image"
-    echo "  $0 start    # Start the telosmiligramme server"
-    echo "  $0 logs -f  # Follow logs in real-time"
+    echo "  $0 build"
+    echo "  $0 start"
+    echo "  $0 logs -f"
 }
 
 check_docker() {
@@ -56,7 +52,6 @@ check_docker() {
         exit 1
     fi
     
-    # Check for Docker Compose (prefer v2 syntax)
     if docker compose version &> /dev/null; then
         log_info "Using Docker Compose v2"
     elif command -v docker-compose &> /dev/null; then
@@ -68,7 +63,6 @@ check_docker() {
 }
 
 get_compose_cmd() {
-    # Prefer Docker Compose v2 syntax
     if docker compose version &> /dev/null; then
         echo "docker compose"
     elif command -v docker-compose &> /dev/null; then
@@ -89,10 +83,7 @@ build_image() {
 start_telosmiligramme() {
     log_info "Starting Telosmiligramme server..."
     
-    # Create logs directory if it doesn't exist
     mkdir -p logs
-    
-    # Create telosmiligramme.log if it doesn't exist
     touch telosmiligramme.log
     
     COMPOSE_CMD=$(get_compose_cmd)
@@ -155,10 +146,8 @@ clean_resources() {
     fi
 }
 
-# Check if Docker is available
 check_docker
 
-# Handle command line arguments
 case "${1:-help}" in
     build)
         build_image

@@ -37,11 +37,9 @@ def log_event(level, event_type, details):
 
     print(json.dumps(log_entry))
 
-    # Write to main log file
     with open(LOG_FILE, "a") as f:
         f.write(json.dumps(log_entry) + "\n")
     
-    # Write to daily log file in logs directory
     os.makedirs(LOGS_DIR, exist_ok=True)
     daily_log_file = os.path.join(LOGS_DIR, f"telosmiligramme-{datetime.utcnow().strftime('%Y-%m-%d')}.log")
     with open(daily_log_file, "a") as f:
@@ -64,49 +62,33 @@ def analyze_and_score(threat_type, payload):
     details = {"threat_type": "none", "payload": payload}
 
     if threat_type == "SQLi":
-        # Patterns SQL Injection étendus
         sqli_patterns = [
-            # Boolean-based injections
             r"(\'|\")\s*OR\s*(\'|\")\d(\'|\")\s*=\s*(\'|\")\d",
             r"(\'|\")\s*OR\s*(\'|\").*?(\'|\")\s*=\s*(\'|\").*?(\'|\")",
             r"(\'|\")\s*AND\s*(\'|\")\d(\'|\")\s*=\s*(\'|\")\d",
             r"(\'|\")\s*(OR|AND)\s*(\'|\").*?(\'|\")",
             r"\b(true|false)\s*(OR|AND)\s*(true|false)\b",
-            
-            # Union-based injections
             r"\b(UNION|SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE)\b",
             r"UNION\s+(ALL\s+)?SELECT",
             r"SELECT\s+.*\s+FROM\s+",
             r"INSERT\s+INTO\s+",
             r"UPDATE\s+.*\s+SET\s+",
             r"DELETE\s+FROM\s+",
-            
-            # Error-based injections
             r"(CAST|CONVERT|EXTRACTVALUE|UPDATEXML|XMLTYPE)",
             r"(GROUP_CONCAT|CONCAT|SUBSTRING|MID|LEFT|RIGHT)",
             r"(SLEEP|WAITFOR|DELAY|BENCHMARK)",
-            
-            # Time-based injections
             r"(SLEEP|WAITFOR\s+DELAY|BENCHMARK|PG_SLEEP)",
             r"\bIF\s*\(.*,.*SLEEP\(",
             r"\bIF\s*\(.*,.*WAITFOR\s+DELAY",
-            
-            # Database specific
             r"(INFORMATION_SCHEMA|SYSOBJECTS|SYSCOLUMNS|DUAL)",
             r"(@@VERSION|@@SERVERNAME|USER\(\)|DATABASE\(\))",
             r"(LOAD_FILE|INTO\s+OUTFILE|INTO\s+DUMPFILE)",
-            
-            # Special characters and operators
             r"['\"];?\s*(#|--|\|\|)",
             r"['\"];?\s*\/\*.*\*\/",
             r"\|\|.*\|\|",
             r";\s*(SELECT|INSERT|UPDATE|DELETE|DROP)",
-            
-            # Hex encoding
             r"0x[0-9a-fA-F]+",
             r"CHAR\(\d+\)",
-            
-            # Comment bypasses
             r"\/\*!.*\*\/",
             r"\/\*.*\*\/",
             r"--[^\r\n]*",
@@ -121,38 +103,24 @@ def analyze_and_score(threat_type, payload):
                 break
                 
     elif threat_type == "XSS":
-        # Patterns XSS étendus
         xss_patterns = [
-            # Script tags
             r"<script[^>]*>.*?</script>",
             r"<script[^>]*>",
             r"</script>",
-            
-            # Event handlers
             r"on\w+\s*=\s*['\"]?[^'\"]*['\"]?",
             r"on(load|click|error|focus|blur|change|submit|reset|select|resize|scroll|unload|beforeunload|hashchange|pagehide|pageshow|popstate|storage|online|offline|message)",
-            
-            # JavaScript URIs
             r"javascript\s*:",
             r"vbscript\s*:",
             r"data\s*:[^,]*,.*script",
-            
-            # HTML entities and encoding
             r"&[#x]?[0-9a-fA-F]+;",
             r"&#x[0-9a-fA-F]+;",
             r"&#\d+;",
-            
-            # Tag injections
             r"<(iframe|embed|object|applet|form|input|img|svg|math|style|link|meta|base)[^>]*>",
             r"<\/?(iframe|embed|object|applet|form|input|img|svg|math|style|link|meta|base)",
-            
-            # CSS injections
             r"expression\s*\(",
             r"@import\s+",
             r"behaviour\s*:",
             r"-moz-binding\s*:",
-            
-            # Advanced XSS
             r"String\.fromCharCode\s*\(",
             r"eval\s*\(",
             r"setTimeout\s*\(",
@@ -164,11 +132,9 @@ def analyze_and_score(threat_type, payload):
             r"alert\s*\(",
             r"confirm\s*\(",
             r"prompt\s*\(",
-            
-            # Encoded payloads
-            r"%3C.*%3E",  # URL encoded < >
-            r"\\\\u[0-9a-fA-F]{4}",  # Unicode escape
-            r"\\\\x[0-9a-fA-F]{2}",  # Hex escape
+            r"%3C.*%3E",
+            r"\\\\u[0-9a-fA-F]{4}",
+            r"\\\\x[0-9a-fA-F]{2}",
         ]
         
         for pattern in xss_patterns:
@@ -179,7 +145,6 @@ def analyze_and_score(threat_type, payload):
                 break
                 
     elif threat_type == "RCE_Attempt":
-        # Extensions de fichiers suspectes étendues
         dangerous_extensions = [
             ".php", ".php3", ".php4", ".php5", ".phtml", ".phps",
             ".jsp", ".jspx", ".jsw", ".jsv", ".jspf",
@@ -195,7 +160,6 @@ def analyze_and_score(threat_type, payload):
             ".ps1", ".psm1", ".psd1", ".ps1xml", ".pssc", ".psrc", ".cdxml"
         ]
         
-        # Commandes système suspectes
         command_patterns = [
             r"\b(cat|type|more|less|head|tail|grep|find|locate|which|whereis)\b",
             r"\b(ls|dir|pwd|cd|mkdir|rmdir|rm|del|copy|cp|mv|move)\b",
@@ -209,8 +173,6 @@ def analyze_and_score(threat_type, payload):
             r"\b(git|svn|hg|cvs|bzr)\b",
             r"\b(mysql|psql|sqlite|mongo|redis-cli)\b",
             r"\b(docker|kubectl|helm|terraform|ansible)\b",
-            
-            # Command injection patterns
             r"[;&|`$(){}[\]<>]",
             r"\$\(.*\)",
             r"`.*`",
@@ -218,8 +180,6 @@ def analyze_and_score(threat_type, payload):
             r"&&\s*\w+",
             r"\|\|\s*\w+",
             r";\s*\w+",
-            
-            # File paths
             r"/etc/passwd",
             r"/etc/shadow",
             r"/etc/hosts",
@@ -236,7 +196,6 @@ def analyze_and_score(threat_type, payload):
             r"C:\\temp\\",
         ]
         
-        # Vérifier les extensions
         for ext in dangerous_extensions:
             if payload.lower().endswith(ext):
                 details["threat_type"] = "RCE_Attempt"
@@ -244,7 +203,6 @@ def analyze_and_score(threat_type, payload):
                 score_increase = 20
                 break
         
-        # Vérifier les patterns de commandes
         if score_increase == 0:
             for pattern in command_patterns:
                 if re.search(pattern, payload, re.IGNORECASE):
@@ -269,12 +227,8 @@ def analyze_and_score(threat_type, payload):
 
 
 def detect_additional_threats(payload, headers=None, method=None, path=None):
-    """
-    Détecte des menaces additionnelles non couvertes par les patterns principaux
-    """
     threats = []
     
-    # Directory Traversal / Path Traversal
     path_traversal_patterns = [
         r"\.\.\/",
         r"\.\.[\\]",
@@ -297,7 +251,6 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
             })
             break
     
-    # Local File Inclusion (LFI) / Remote File Inclusion (RFI)
     lfi_rfi_patterns = [
         r"(file|http|https|ftp|ftps|sftp|data|php|expect|zip|phar|dict|ogg|rar)://",
         r"(include|require|include_once|require_once)\s*\(",
@@ -320,7 +273,6 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
             })
             break
     
-    # LDAP Injection
     ldap_patterns = [
         r"\(\s*\|\s*\(",
         r"\(\s*&\s*\(",
@@ -340,7 +292,6 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
             })
             break
     
-    # XXE (XML External Entity)
     xxe_patterns = [
         r"<!ENTITY",
         r"<!DOCTYPE.*\[",
@@ -361,10 +312,6 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
             })
             break
     
-    # SSRF detection removed - commented out for simplification
-    # ssrf_patterns = [...]
-    
-    # NoSQL Injection
     nosql_patterns = [
         r"\$ne\s*:",
         r"\$gt\s*:",
@@ -392,7 +339,6 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
             })
             break
     
-    # Template Injection (SSTI)
     ssti_patterns = [
         r"\{\{.*\}\}",
         r"\{%.*%\}",
@@ -416,7 +362,6 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
             })
             break
     
-    # Deserialization Attacks
     deserialization_patterns = [
         r"(java\.lang\.|java\.util\.|java\.io\.)",
         r"(ObjectInputStream|readObject|writeObject)",
@@ -424,8 +369,8 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
         r"(__reduce__|__setstate__|__getstate__)",
         r"(base64|b64decode|b64encode)",
         r"(serialize|unserialize|deserialize)",
-        r"O:\d+:",  # PHP serialized object
-        r"a:\d+:",  # PHP serialized array
+        r"O:\d+:",
+        r"a:\d+:",
     ]
     
     for pattern in deserialization_patterns:
@@ -437,17 +382,16 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
             })
             break
     
-    # User-Agent based attacks
     if headers and 'User-Agent' in headers:
         ua = headers['User-Agent']
         suspicious_ua_patterns = [
-            r"(sqlmap|havij|pangolin|jsql|bsqlbf)",  # SQL injection tools
-            r"(nikto|nessus|openvas|acunetix|netsparker)",  # Vulnerability scanners
-            r"(masscan|nmap|zmap|unicornscan)",  # Port scanners
-            r"(metasploit|msfconsole|meterpreter)",  # Exploitation frameworks
-            r"(burp|owasp|zap|w3af|skipfish)",  # Web security tools
-            r"(python-requests|urllib|curl|wget)",  # Scripted requests
-            r"(bot|crawler|spider|scraper)",  # Automated tools
+            r"(sqlmap|havij|pangolin|jsql|bsqlbf)",
+            r"(nikto|nessus|openvas|acunetix|netsparker)",
+            r"(masscan|nmap|zmap|unicornscan)",
+            r"(metasploit|msfconsole|meterpreter)",
+            r"(burp|owasp|zap|w3af|skipfish)",
+            r"(python-requests|urllib|curl|wget)",
+            r"(bot|crawler|spider|scraper)",
         ]
         
         for pattern in suspicious_ua_patterns:
@@ -462,12 +406,8 @@ def detect_additional_threats(payload, headers=None, method=None, path=None):
     return threats
 
 def check_request_anomalies(method, path, headers, body_size=0):
-    """
-    Détecte des anomalies dans la structure de la requête
-    """
     anomalies = []
     
-    # Méthodes HTTP suspectes
     if method in ['TRACE', 'TRACK', 'DEBUG', 'PATCH', 'CONNECT']:
         anomalies.append({
             "anomaly_type": "Suspicious_HTTP_Method",
@@ -475,7 +415,6 @@ def check_request_anomalies(method, path, headers, body_size=0):
             "score": 4
         })
     
-    # Headers suspects
     suspicious_headers = [
         'X-Forwarded-For', 'X-Real-IP', 'X-Originating-IP',
         'X-Cluster-Client-IP', 'X-Remote-IP', 'X-Remote-Addr'
@@ -485,7 +424,6 @@ def check_request_anomalies(method, path, headers, body_size=0):
         for header in suspicious_headers:
             if header in headers:
                 value = headers[header]
-                # Check for header injection
                 if any(char in value for char in ['\n', '\r', '\0']):
                     anomalies.append({
                         "anomaly_type": "Header_Injection",
@@ -493,15 +431,13 @@ def check_request_anomalies(method, path, headers, body_size=0):
                         "score": 7
                     })
     
-    # Body size anormalement grand (potentiel DoS)
-    if body_size > 10 * 1024 * 1024:  # 10MB
+    if body_size > 10 * 1024 * 1024:
         anomalies.append({
             "anomaly_type": "Large_Body_Size",
             "details": f"Size: {body_size} bytes",
             "score": 6
         })
     
-    # Paths suspects
     suspicious_paths = [
         r"/\.well-known/",
         r"/admin/",
@@ -546,18 +482,14 @@ def login():
         username = request.form.get("username", "")
         password = request.form.get("password", "")
 
-        # Détections principales
         analyze_and_score("SQLi", username)
         analyze_and_score("SQLi", password)
         
-        # Détections additionnelles
         additional_threats_username = detect_additional_threats(username, dict(request.headers), request.method, request.path)
         additional_threats_password = detect_additional_threats(password, dict(request.headers), request.method, request.path)
         
-        # Anomalies de requête
         anomalies = check_request_anomalies(request.method, request.path, dict(request.headers), len(request.get_data()))
         
-        # Traitement des menaces additionnelles
         for threat in additional_threats_username + additional_threats_password:
             IP_SCORES[request.remote_addr] = IP_SCORES.get(request.remote_addr, 0) + threat['score']
             log_event(
@@ -571,7 +503,6 @@ def login():
                 }
             )
         
-        # Traitement des anomalies
         for anomaly in anomalies:
             IP_SCORES[request.remote_addr] = IP_SCORES.get(request.remote_addr, 0) + anomaly['score']
             log_event(
@@ -608,16 +539,12 @@ def login():
 def search():
     query = request.args.get("query", "")
 
-    # Détections principales
     analyze_and_score("XSS", query)
     
-    # Détections additionnelles sur la query
     additional_threats = detect_additional_threats(query, dict(request.headers), request.method, request.path)
     
-    # Anomalies de requête
     anomalies = check_request_anomalies(request.method, request.path, dict(request.headers), len(request.get_data()))
     
-    # Traitement des menaces additionnelles
     for threat in additional_threats:
         IP_SCORES[request.remote_addr] = IP_SCORES.get(request.remote_addr, 0) + threat['score']
         log_event(
@@ -631,7 +558,6 @@ def search():
             }
         )
     
-    # Traitement des anomalies
     for anomaly in anomalies:
         IP_SCORES[request.remote_addr] = IP_SCORES.get(request.remote_addr, 0) + anomaly['score']
         log_event(
@@ -660,16 +586,12 @@ def upload():
         if file.filename == "":
             return jsonify({"status": "error", "message": "No selected file"}), 400
 
-        # Détections principales
         analyze_and_score("RCE_Attempt", file.filename)
         
-        # Détections additionnelles sur le nom de fichier
         additional_threats = detect_additional_threats(file.filename, dict(request.headers), request.method, request.path)
         
-        # Anomalies de requête
         anomalies = check_request_anomalies(request.method, request.path, dict(request.headers), len(request.get_data()))
         
-        # Traitement des menaces additionnelles
         for threat in additional_threats:
             IP_SCORES[request.remote_addr] = IP_SCORES.get(request.remote_addr, 0) + threat['score']
             log_event(
@@ -683,7 +605,6 @@ def upload():
                 }
             )
         
-        # Traitement des anomalies
         for anomaly in anomalies:
             IP_SCORES[request.remote_addr] = IP_SCORES.get(request.remote_addr, 0) + anomaly['score']
             log_event(

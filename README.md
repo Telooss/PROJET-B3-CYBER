@@ -1,7 +1,7 @@
-# 🍯 HTTP Honeypot - Telosmiligramme
+# 🍯 Telosmiligramme - HTTP Honeypot
 
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](https://docker.com)
-[![Python](https://img.shields.io/badge/Python-3.11-green.svg)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.12-green.svg)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0.0-red.svg)](https://flask.palletsprojects.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -21,7 +21,7 @@ A lightweight, educational HTTP honeypot designed to simulate a social media pla
 ## 📊 Log Persistence
 
 The honeypot logs are **automatically persisted** on the host machine:
-- `./honeypot.log` - Main log file with all events
+- `./telosmiligramme.log` - Main log file with all events
 - `./logs/` - Additional log directory for future extensions
 
 Logs remain accessible even after container restarts, making them ready for integration with monitoring systems like Grafana Loki, ELK Stack, or similar log aggregation platforms.
@@ -39,14 +39,14 @@ Logs remain accessible even after container restarts, making them ready for inte
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd HTTP-Honeypot
+cd PROJET-B3-CYBER
 
 # Make the script executable
-chmod +x start-honeypot.sh
+chmod +x start-telosmiligramme.sh
 
 # Build and start the honeypot
-./start-honeypot.sh build
-./start-honeypot.sh start
+./start-telosmiligramme.sh build
+./start-telosmiligramme.sh start
 ```
 
 ### Option 2: Docker Compose
@@ -56,22 +56,22 @@ chmod +x start-honeypot.sh
 docker-compose up -d
 
 # View logs
-docker-compose logs -f honeypot
+docker-compose logs -f telosmiligramme
 ```
 
 ### Option 3: Pure Docker
 
 ```bash
 # Build the image
-docker build -t http-honeypot .
+docker build -t http-telosmiligramme .
 
 # Run the container
 docker run -d \
-  --name http-honeypot \
+  --name http-telosmiligramme \
   -p 8080:8080 \
   -v $(pwd)/logs:/app/logs \
-  -v $(pwd)/honeypot.log:/app/honeypot.log \
-  http-honeypot
+  -v $(pwd)/telosmiligramme.log:/app/telosmiligramme.log \
+  http-telosmiligramme
 ```
 
 ## 🌐 Accessing the Honeypot
@@ -86,12 +86,12 @@ Once running, access the honeypot at:
 
 ### View Live Logs
 ```bash
-./start-honeypot.sh logs -f
+./start-telosmiligramme.sh logs -f
 ```
 
 ### Check Status
 ```bash
-./start-honeypot.sh status
+./start-telosmiligramme.sh status
 ```
 
 ### Example Log Entry
@@ -114,17 +114,17 @@ Once running, access the honeypot at:
 
 ## 🛠️ Management Commands
 
-The `start-honeypot.sh` script provides easy management:
+The `start-telosmiligramme.sh` script provides easy management:
 
 ```bash
-./start-honeypot.sh build     # Build the Docker image
-./start-honeypot.sh start     # Start the honeypot
-./start-honeypot.sh stop      # Stop the honeypot
-./start-honeypot.sh restart   # Restart the honeypot
-./start-honeypot.sh logs      # View logs
-./start-honeypot.sh logs -f   # Follow logs in real-time
-./start-honeypot.sh status    # Show container status
-./start-honeypot.sh clean     # Clean up Docker resources
+./start-telosmiligramme.sh build     # Build the Docker image
+./start-telosmiligramme.sh start     # Start the telosmiligramme server
+./start-telosmiligramme.sh stop      # Stop the telosmiligramme server
+./start-telosmiligramme.sh restart   # Restart the telosmiligramme server
+./start-telosmiligramme.sh logs      # View logs
+./start-telosmiligramme.sh logs -f   # Follow logs in real-time
+./start-telosmiligramme.sh status    # Show container status
+./start-telosmiligramme.sh clean     # Clean up Docker resources
 ```
 
 ## 🔧 Configuration
@@ -152,7 +152,7 @@ Default limits (configurable in `docker-compose.yml`):
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Attackers     │───▶│   HTTP Honeypot  │───▶│   Log Analysis  │
+│   Attackers     │───▶│  Telosmiligramme │───▶│   Log Analysis  │
 │                 │    │   (Flask App)    │    │                 │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                │
@@ -184,16 +184,16 @@ Default limits (configurable in `docker-compose.yml`):
 ### Project Structure
 
 ```
-HTTP-Honeypot/
-├── app.py                 # Main Flask application
-├── requirements.txt       # Python dependencies
-├── Dockerfile            # Container definition
-├── docker-compose.yml    # Multi-container setup
-├── start-honeypot.sh     # Management script
-├── templates/            # HTML templates
-├── static/              # Static assets (CSS, JS, images)
-├── public/              # Public assets
-└── logs/                # Log files directory
+PROJET-B3-CYBER/
+├── app.py                      # Main Flask application
+├── requirements.txt            # Python dependencies
+├── Dockerfile                  # Container definition
+├── docker-compose.yml          # Multi-container setup
+├── start-telosmiligramme.sh    # Management script
+├── templates/                  # HTML templates
+├── static/                     # Static assets (CSS, JS, images)
+├── public/                     # Public assets
+└── logs/                       # Log files directory
 ```
 
 ### Local Development
@@ -262,3 +262,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Flask framework for the web application
 - Docker for containerization
 - Python community for excellent libraries
+
+---
+*Dernière mise à jour : 2 juillet 2025*

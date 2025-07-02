@@ -14,14 +14,12 @@ services:
       - BACKEND_PORT=8080
       - FLASK_ENV=production
     volumes:
-      # Persist logs outside container
       - ./logs:/app/logs
       - ./telosmiligramme.log:/app/telosmiligramme.log
     restart: unless-stopped
     networks:
       - telosmiligramme-network
     
-    # Resource limits to prevent abuse
     deploy:
       resources:
         limits:
@@ -31,14 +29,12 @@ services:
           cpus: '0.25'
           memory: 256M
     
-    # Logging configuration
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
         
-    # Security options
     security_opt:
       - no-new-privileges:true
     read_only: false
